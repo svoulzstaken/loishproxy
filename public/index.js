@@ -36,11 +36,14 @@ form.addEventListener("submit", async (event) => {
 
 	let frame = document.getElementById("uv-frame");
 	frame.style.display = "block";
+	
+	// Always set the fresh high-speed Wisp transport so it overwrites any stale cache in IndexedDB
 	let wispUrl = "wss://wisp.mercurywork.shop/";
-	if ((await connection.getTransport()) !== "/epoxy/index.mjs") {
-		await connection.setTransport("/epoxy/index.mjs", [
-			{ wisp: wispUrl },
-		]);
+	try {
+		await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+	} catch (err) {
+		console.error("setTransport error:", err);
 	}
+	
 	frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
 });
