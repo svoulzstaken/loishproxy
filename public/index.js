@@ -36,11 +36,7 @@ form.addEventListener("submit", async (event) => {
 
 	let frame = document.getElementById("uv-frame");
 	frame.style.display = "block";
-	let wispUrl =
-		(location.protocol === "https:" ? "wss" : "ws") +
-		"://" +
-		location.host +
-		"/wisp/";
+	let wispUrl = "wss://wisp.mercurywork.shop/";
 	if ((await connection.getTransport()) !== "/epoxy/index.mjs") {
 		await connection.setTransport("/epoxy/index.mjs", [
 			{ wisp: wispUrl },
