@@ -44,3 +44,26 @@ form.addEventListener("submit", async (event) => {
 
 	frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
 });
+
+const cloakBtn = document.getElementById("cloak-btn");
+if (cloakBtn) {
+	cloakBtn.addEventListener("click", () => {
+		const win = window.open("about:blank", "_blank");
+		if (!win) {
+			alert("Please allow popups to open the cloaked session!");
+			return;
+		}
+		win.document.title = "Google Classroom";
+		const iframe = win.document.createElement("iframe");
+		iframe.style.position = "fixed";
+		iframe.style.inset = "0";
+		iframe.style.width = "100vw";
+		iframe.style.height = "100vh";
+		iframe.style.border = "none";
+		iframe.style.margin = "0";
+		iframe.style.padding = "0";
+		iframe.src = location.href;
+		win.document.body.style.margin = "0";
+		win.document.body.appendChild(iframe);
+	});
+}
