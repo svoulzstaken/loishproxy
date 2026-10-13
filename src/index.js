@@ -3,10 +3,14 @@ import { hostname } from "node:os";
 import { createServer } from "node:http";
 import express from "express";
 import wisp from "wisp-server-node";
+import { createBareServer } from "@tomphttp/bare-server-node";
 
 import { uvPath } from "@titaniumnetwork-dev/ultraviolet";
 import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
 import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
+
+// Create Bare server at /bare/ for HTTP-only transport (no WebSocket needed)
+const bare = createBareServer("/bare/");
 
 const app = express();
 // Load our publicPath first and prioritize it over UV.
@@ -16,6 +20,10 @@ app.use(express.static("./public"));
 app.use("/uv/", express.static(uvPath));
 app.use("/epoxy/", express.static(epoxyPath));
 app.use("/baremux/", express.static(baremuxPath));
+
+// Serve bare-transport client files
+// bare-transport's dist folder contains index.mjs needed by the browser
+app.use("/bare-transport/", express.static(join(import.meta.dirname, "../node_modules/@mercuryworkshop/bare-transport/dist")));
 
 // Error for everything else
 app.use((req, res) => {
@@ -28,13 +36,27 @@ const server = createServer();
 server.on("request", (req, res) => {
 	res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
 	res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+
+	// Route bare server requests first
+	if (bare.shouldRoute(req)) {
+		bare.routeRequest(req, res);
+		return;
+	}
+
 	app(req, res);
 });
+
 server.on("upgrade", (req, socket, head) => {
+	// Bare server WebSocket upgrades (for proxied WebSocket sites)
+	if (bare.shouldRoute(req)) {
+		bare.routeUpgrade(req, socket, head);
+		return;
+	}
+	// Wisp WebSocket upgrades (kept as fallback)
 	if (req.url.endsWith("/wisp/")) {
 		wisp.routeRequest(req, socket, head);
 		return;
-	} 
+	}
 	socket.end();
 });
 

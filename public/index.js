@@ -36,14 +36,11 @@ form.addEventListener("submit", async (event) => {
 
 	let frame = document.getElementById("uv-frame");
 	frame.style.display = "block";
-	
-	// Always set the fresh high-speed Wisp transport so it overwrites any stale cache in IndexedDB
-	let wispUrl = "wss://wisp.mercurywork.shop/";
-	try {
-		await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
-	} catch (err) {
-		console.error("setTransport error:", err);
-	}
-	
+
+	// Use Bare transport (pure HTTP) instead of Epoxy (WebSocket)
+	// This works on networks that block WebSocket connections
+	const bareUrl = location.origin + "/bare/";
+	await connection.setTransport("/bare-transport/index.mjs", [bareUrl]);
+
 	frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
 });
