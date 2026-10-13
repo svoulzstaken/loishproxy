@@ -10,7 +10,14 @@ import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
 import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
 
 // Create Bare server at /bare/ for HTTP-only transport (no WebSocket needed)
-const bare = createBareServer("/bare/");
+// Increase connectionLimiter so Cloudflare/Railway reverse-proxy IP doesn't trigger 429
+const bare = createBareServer("/bare/", {
+	connectionLimiter: {
+		maxConnectionsPerIP: 1000,
+		windowDuration: 60,
+		blockDuration: 1,
+	},
+});
 
 const app = express();
 // Load our publicPath first and prioritize it over UV.
