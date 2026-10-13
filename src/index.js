@@ -21,8 +21,8 @@ app.use("/uv/", express.static(uvPath));
 app.use("/epoxy/", express.static(epoxyPath));
 app.use("/baremux/", express.static(baremuxPath));
 
-// Serve bare-transport client files
-// bare-transport's dist folder contains index.mjs needed by the browser
+// Serve our patched bare-transport client files first
+app.use("/bare-transport/", express.static("./public/bare-transport"));
 app.use("/bare-transport/", express.static(join(import.meta.dirname, "../node_modules/@mercuryworkshop/bare-transport/dist")));
 
 // Error for everything else
